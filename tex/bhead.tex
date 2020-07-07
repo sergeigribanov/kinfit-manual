@@ -1,0 +1,51 @@
+\documentclass[aspectratio=169]{beamer}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[russian]{babel}
+\usepackage{xcolor,colortbl}
+\usepackage{wrapfig, blindtext}
+\usepackage{graphicx}
+\graphicspath{{../figures/}}
+\usepackage{booktabs}
+\usepackage{xtab}
+\usepackage{caption}
+\usepackage{siunitx}
+\usepackage{tikz}
+\usetikzlibrary{calc}
+\usetikzlibrary{decorations.markings}
+\definecolor{cadmiumgreen}{rgb}{0.0, 0.42, 0.24}
+\usetheme[progressbar=frametitle,
+subsectionpage=progressbar,
+block=fill]{metropolis}
+\usepackage[export]{adjustbox}
+\titlegraphic{%
+  \includegraphics[width=.075\textwidth]{BNP_logo_Blue}\hfill
+  \includegraphics[width=.075\textwidth]{CMD3_logo}
+}
+\makeatletter
+\setsansfont{Ubuntu}
+\setmonofont{Ubuntu Mono}
+\setlength{\metropolis@progressinheadfoot@linewidth}{3pt}
+\setlength{\metropolis@frametitle@padding}{1.8ex}% <- default 2.2 ex
+\setbeamertemplate{frametitle}{%
+    \nointerlineskip%
+    \begin{beamercolorbox}[%
+      wd=\paperwidth,%
+      sep=0pt,%
+      leftskip=\metropolis@frametitle@padding,%
+      rightskip=\metropolis@frametitle@padding,%
+      ]{frametitle}%
+      \metropolis@frametitlestrut@start%
+      \insertframetitle%
+      \nolinebreak%
+      \metropolis@frametitlestrut@end%
+      \hfill
+      \includegraphics[height=3ex,keepaspectratio,valign=c]{cmd3_logo}
+    \end{beamercolorbox}
+    \usebeamertemplate*{progress bar in head/foot}
+    \vskip3pt
+    \hspace*{-2.5\metropolis@frametitle@padding}%
+}
+\makeatother
+\addtobeamertemplate{frametitle}{}{\vspace{-2em}}
+\author[Грибанов Сергей]{Грибанов Сергей Сергеевич\\ ssgribanov@gmail.com}

@@ -1,0 +1,561 @@
+\input{bhead.tex}
+
+\title[кинематический фит]{Пакет кинематической реконструкции для детектора КМД-3}
+\date{\today}
+\begin{document}
+
+\begin{frame} 
+\titlepage
+\end{frame}
+
+\begin{frame}{Кинематическая реконструкция}
+  \footnotesize
+  Процедура кинематической реконструкции заключается в поиске условного минимума
+  функции хи-квадрат: $\chi^2(\vec{x}) = \sum\limits^{N}_{i =
+    1}\Delta{\vec{x}}^\intercal_i\mathcal{A}_i\Delta{\vec{x}}_i$, где $i$ --
+  номер частицы, $N$ -- количество частиц, $\Delta{\vec{x}}_i = \vec{x}_i -
+  \vec{x}^0_i$ -- разница вектора значений параметров $i$-й частицы на текущей
+  итерации ($\vec{x}_i$) и вектора измеренных значений параметров $i$-й частицы
+  ($\vec{x}^0_i$), $\mathcal{A}_i$ -- обратная матрица ошибок для измеренных
+  параметров $i$-й частицы, $\vec{x}=\{\vec{x}_1, \vec{x}_2, ..., \vec{x}_N\}$. Требуется
+  выполнение $M$ условий вида $c_j(\vec{x},\vec{y}) = 0$, где $j=1, 2, ..., M$,
+  $\vec{y}$ --- вектор неизмеряемых параметров (натуральный параметр трека,
+  координаты общей вершины). Поиск условного минимума функции $\chi^2(\vec{x})$
+  эквивалентен поиску безусловного минимума функции $\mathcal{L}(\vec{q}) =
+  \chi^2(\vec{x}) + \sum\limits^M_{j = 1}\lambda_jc_j(\vec{x}, \vec{y})$, где
+  $\lambda_j$ -- лагранжевы множители, $\vec{q} = \{\vec{x}, \vec{y}, \vec{\lambda}\}$.
+  
+  Уравнеие $\nabla\mathcal{L}(\vec{q}) = 0$ решается численно с помощью
+  многомерного метода Ньютона: $\vec{q}_{k + 1} = \vec{q}_{k} -
+  \mathcal{H}^{-1}(\vec{q}_k)\nabla\mathcal{L}(\vec{q}_{k})$, где $\mathcal{H}$
+  -- гессиан функции $\mathcal{L}(\vec{q})$.
+\end{frame}
+
+\begin{frame}{Основные возможности и особенности}
+  \scriptsize
+  \begin{itemize}
+  \item Градиент и гессиан функции $\mathcal{L}(\vec{q})$ заданы вручную.
+  \item Есть возможность численного расчета градиента и гессиана функции
+    $\mathcal{L}(\vec{q})$. Однако численный счет производных работает
+    значительно медленнее, а для стабильной работы кинематической реконструкции
+    в этом случае необходимо правильно выбрать шаг диффиренцирования (сейчас
+    один для всех параметров).
+  \item Используется библиотека Eigen3. Остальные два пакета кинематической
+    реконструкции, применяющиеся коллаборацией КМД-3, используют библиотеки
+    линейной алгебры из фреймворка ROOT.
+  \item Далее под \textit{частицами} будут пониматься частицы в конечном
+    состоянии. Только для таких частиц в пакете кинематической реконструкции
+    заведены отдельные классы.
+  \item Иногда речь будет идти о
+    \textit{промежуточных частицах}. Отдельные классы для таких частиц не
+    заведены в пакете кинематической реконструкции для КМД-3 (в этом нет
+    необходимости). Однако, зная вершины и рождения и распада для таких частиц,
+    можно найти вектора направлений их импульсов. Эти вектора могут быть
+    использованы в условиях на уголы между импульсами промежуточных частиц и
+    суммарными импульсами их продуктов распада.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Основные возможности и особенности}
+  \begin{itemize}
+    \scriptsize
+  \item Имеется параметризация заряженных частиц и фотонов для детектора КМД-3.
+  \item Имеется параметризация четырех-импульса массивных частиц c использованием
+    трех декартовых компонент импульса: $(\sqrt{p^2_x + p^2_y +
+      p^2_z + m^2}, p_x, p_y, p_z)$.
+  \item Имеется параметризация четырех-импульса безмассовых частиц с
+    использованием параметров энергии, полярного и азимутального углов:
+    $(E, E\sin\theta\cos\phi, E\sin\theta\sin\phi, E\cos\theta)$.
+  \item Возможность проводить кинематическую реконструкцию в гипотезах с
+    потерянными частицами.
+  \item Условия на выполнения законов сохранения энергии-импульса.
+  \item Условие на инвариантную массу группы частиц.
+  \item Условия на вылет группы частиц из единой вершины. В случае
+    детектора КМД-3 эти условия накладывается только на заряженные
+    частицы. Для фотонов это условие выполняется по построению зависимости
+    комонент четырех-импульса фотона от параметров фотона и координат вершины.
+  \item В событии может присутствовать несколько вершин.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Параметризация}
+  \scriptsize
+  \fcolorbox{red}{red}{\rule{0pt}{4pt}\rule{4pt}{0pt}}\quad\hspace{-0.5em}-- измеряемые
+  параметры ($\vec{x}$),\hfill
+  \fcolorbox{magenta}{magenta}{\rule{0pt}{4pt}\rule{4pt}{0pt}}\quad\hspace{-0.5em}-- неизмеряемые
+  параметры ($\vec{y}$),\hfill
+  \fcolorbox{cadmiumgreen}{cadmiumgreen}{\rule{0pt}{4pt}\rule{4pt}{0pt}}\quad\hspace{-0.5em}-- константы
+  
+  \textbf{Параметризация четырех-импульса заряженной частицы (КМД-3):}
+  $\textcolor{blue}{\mathcal{P} = (\textcolor{cyan}{\varepsilon},
+    \textcolor{cyan}{p_x}, \textcolor{cyan}{p_y}, \textcolor{cyan}{p_z})}$, где
+  $\textcolor{cyan}{p_x}\textcolor{blue}{=\textcolor{red}{p_{\perp}}
+    \cos{(\textcolor{cyan}{\frac{\omega}{c}}\textcolor{magenta}{ct}
+      - \textcolor{red}{\phi_0})} }$, $\textcolor{cyan}{p_y}\textcolor{blue}{=
+    -\textcolor{red}{p_{\perp}}\sin{(\textcolor{cyan}{\frac{\omega}{c}}\textcolor{magenta}{ct}
+      - \textcolor{red}{\phi_0})}}$,
+  $\textcolor{cyan}{p_z}\textcolor{blue}{=}\textcolor{red}{p_{\perp}}\textcolor{red}{\ctg\theta}$,
+  $\textcolor{cyan}{\varepsilon}\textcolor{blue}{=
+    \sqrt{\textcolor{red}{p^{\textcolor{blue}{2}}_{\perp}}(1 +
+      \textcolor{red}{\ctg^{\textcolor{blue}{2}}\theta}) +
+      \textcolor{cadmiumgreen}{m}^2} }$,
+  $\textcolor{cyan}{\frac{\omega}{c}}\textcolor{blue}{=
+    \frac{\textcolor{cadmiumgreen}{q\mathcal{B}k_c}}{\textcolor{cyan}{\varepsilon}}}$,
+  $\textcolor{cadmiumgreen}{k_c}\textcolor{blue}{\approx 2.9979}$, $\textcolor{cadmiumgreen}{\mathcal{B}}$
+  -- магнитное поле~(Тл), $\textcolor{cadmiumgreen}{q}$ -- заряд
+  частицы~(ед. эл. заряда), $\textcolor{cadmiumgreen}{m}$ -- масса
+  частицы~(МэВ), $\textcolor{red}{p_{\perp}}$ -- перпендикулярная оси $Z$
+  компонента импульса частицы~(МэВ), $\textcolor{red}{\ctg\theta}$ -- котангенс
+  угла между импульсом частицы и осью $Z$, $\textcolor{red}{\phi_0}$ --
+  аксиальный угол импульса частицы~(рад.) в ближайшей к оси пучков точке трека,
+  $\textcolor{magenta}{ct}$ -- натуральный параметр трека~(см).
+  
+  \textbf{Параметризация трека в ДК (КМД-3):}
+  $\textcolor{blue}{(\textcolor{cyan}{x},
+    \textcolor{cyan}{y},
+    \textcolor{cyan}{z})}$ -- координаты точки на треке, $\textcolor{cyan}{x}
+  \textcolor{blue}{=\textcolor{cadmiumgreen}{x_b} + (\textcolor{cyan}{R} -
+    \textcolor{red}{\rho_0})\sin\textcolor{red}{\phi_0} +
+    \textcolor{cyan}{R}\sin{(\textcolor{cyan}{\frac{\omega}{c}}\textcolor{magenta}{ct}
+      - \textcolor{red}{\phi_0})}}$,
+  
+  $\textcolor{cyan}{y}\textcolor{blue}{=\textcolor{cadmiumgreen}{y_b} -
+    (\textcolor{cyan}{R} - \textcolor{red}{\rho_0})\cos\textcolor{red}{\phi_0} +
+    \textcolor{cyan}{R}\cos{(\textcolor{cyan}{\frac{\omega}{c}}\textcolor{magenta}{ct}
+      - \textcolor{red}{\phi_0})} }$,
+  $\textcolor{cyan}{z}\textcolor{blue}{=\textcolor{red}{z_0} +
+    \frac{\textcolor{red}{p_{\perp}}}{\textcolor{cadmiumgreen}{q\mathcal{B}k_c}}}$,
+
+  $\textcolor{blue}{(\textcolor{cadmiumgreen}{x_b},
+    \textcolor{cadmiumgreen}{y_b})}$ -- координаты оси пучков~(см),
+  $\textcolor{red}{\rho_0}$ -- расстояние~(см) от трека до оси пучков с учетом
+  знака (ось пучков внутри спирали -- <<$+$>>, снаружи -- <<$-$>>),
+  $\textcolor{red}{z_0}$ -- $z$-координата~(см) ближайшей к оси пучков точке на треке.
+  
+  \textbf{Параметризация четырех-импульса фотона (КМД-3):} $\textcolor{blue}{\mathcal{P}
+    = (\textcolor{red}{\varepsilon},
+    \textcolor{cyan}{p_x},
+    \textcolor{cyan}{p_y},
+    \textcolor{cyan}{p_z})}$, где $\textcolor{cyan}{p_x}\textcolor{blue}{=
+    \textcolor{red}{\varepsilon}\frac{\textcolor{cyan}{x_c} -
+      \textcolor{magenta}{x_v}}{\textcolor{cyan}{l_c}} }$,
+  $\textcolor{cyan}{p_y}\textcolor{blue}{=
+    \textcolor{red}{\varepsilon}\frac{\textcolor{cyan}{y_c} -
+      \textcolor{magenta}{y_v}}{\textcolor{cyan}{l_c}} }$,
+  $\textcolor{cyan}{p_z}\textcolor{blue}{=
+    \textcolor{red}{\varepsilon}\frac{\textcolor{red}{z_c} -
+      \textcolor{magenta}{z_v}}{\textcolor{cyan}{l_c}} }$,
+  $\textcolor{cyan}{x_c}\textcolor{blue}{=
+    \textcolor{red}{R_c}\cos\textcolor{red}{\phi_c}}$,
+  $\textcolor{cyan}{y_c}\textcolor{blue}{=
+    \textcolor{red}{R_c}\sin\textcolor{red}{\phi_c}}$,
+  $\textcolor{cyan}{l_c}\textcolor{blue}{=\sqrt{
+      (\textcolor{cyan}{x_c} - \textcolor{magenta}{x_v})^2 +
+      (\textcolor{cyan}{y_c} - \textcolor{magenta}{y_v})^2 +
+      (\textcolor{red}{z_c} - \textcolor{magenta}{z_v})^2}}$,
+  $\textcolor{blue}{(\textcolor{cyan}{x_c},
+    \textcolor{cyan}{y_c},
+    \textcolor{red}{z_c})}$ -- точка конверсии фотона~(см),
+  $\textcolor{blue}{(\textcolor{magenta}{x_v},
+    \textcolor{magenta}{y_v}, \textcolor{magenta}{z_v})}$ -- вершина вылета
+  фотона~(см), $\textcolor{red}{\varepsilon}$ -- энергия фотона~(МэВ),
+  $\textcolor{red}{R_c}$ -- радиус точки конверсии~(см),
+  $\textcolor{red}{\phi_c}$ -- азимутальный
+  угол точки конверсии фотона~(рад.).
+\end{frame}
+
+\begin{frame}{Параметризация и условия}
+  \scriptsize
+  \fcolorbox{red}{red}{\rule{0pt}{4pt}\rule{4pt}{0pt}}\quad\hspace{-0.5em}-- измеряемые
+  параметры ($\vec{x}$),\hfill
+  \fcolorbox{magenta}{magenta}{\rule{0pt}{4pt}\rule{4pt}{0pt}}\quad\hspace{-0.5em}-- неизмеряемые
+  параметры ($\vec{y}$),\hfill
+  \fcolorbox{cadmiumgreen}{cadmiumgreen}{\rule{0pt}{4pt}\rule{4pt}{0pt}}\quad\hspace{-0.5em}--
+  константы
+  
+  \textbf{Параметризация четырех-импульса улетевшей частицы с массой $m_l$:}
+  $\mathcal{P} = (\sqrt{p^2_x + p^2_y + p^2_z + m^2_l}, p_x, p_y, p_z)$.
+
+  \textbf{Параметризация четырех-импульса безмассовой улетевшей частицы:}
+  $\mathcal{P} = (\varepsilon_l, \varepsilon_l\sin\theta_l\cos\phi_l,
+  \varepsilon_l\sin\theta_l\sin\phi_l, \varepsilon_l\cos\theta_l)$.
+
+  \textbf{Условие на з.с. энергии-импульса:}
+  $\textcolor{blue}{\sum\limits_i\textcolor{cyan}{p^{\textcolor{blue}{i}}_x} =
+    0}$,
+  $\textcolor{blue}{\sum\limits_i\textcolor{cyan}{p^{\textcolor{blue}{i}}_y} =
+    0}$,
+  $\textcolor{blue}{\sum\limits_i\textcolor{cyan}{p^{\textcolor{blue}{i}}_z} =
+    0}$,
+  $\textcolor{blue}{\sum\limits_i\textcolor{cyan}{\varepsilon^{\textcolor{blue}{i}}}
+    - 2\textcolor{cadmiumgreen}{\varepsilon_b} = 0}$, где
+  $\textcolor{cadmiumgreen}{\varepsilon_b}$ -- энергия в пучке.
+  
+  \textbf{Условие на координаты вершины заряженной частицы:}
+  $\textcolor{blue}{\textcolor{cyan}{x} - \textcolor{magenta}{x_v} = 0}$,
+  $\textcolor{blue}{\textcolor{cyan}{y} - \textcolor{magenta}{y_v} = 0}$,
+  $\textcolor{blue}{\textcolor{cyan}{z} - \textcolor{magenta}{z_v} = 0}$, где
+  $\textcolor{blue}{(\textcolor{cyan}{x}, \textcolor{cyan}{y},
+    \textcolor{cyan}{z})}$ -- точка на треке в зависимости от параметров (в том
+  числе и от натурального параметра трека $\textcolor{magenta}{ct}$),
+  $\textcolor{blue}{(\textcolor{magenta}{x_v}, \textcolor{magenta}{y_v},
+    \textcolor{magenta}{z_v})}$ -- координаты вершины, из которой вылетела
+  заряженная частица.
+
+  \textit{Требование на вылет фотона из определенной вершины выполняется
+    автоматически, по построению параметризации четырех-импульса фотона.}
+
+  \textbf{Условие на инвариантную массу группы частиц:}
+  $\textcolor{blue}{(\sum\limits_{\alpha}\textcolor{cyan}{\varepsilon}^{\alpha})^2
+    - (\sum\limits_{\alpha}\textcolor{cyan}{\vec{p}}^{\alpha})^2 -
+    \textcolor{cadmiumgreen}{M}^2 = 0}$, где $\textcolor{cadmiumgreen}{M}$ --
+  требуемое значение инвариантной массы.
+  
+  \textbf{Условие на угол между импульсом промежуточной частицы и суммарным импульсом
+    продуктов ее распада.}
+\end{frame}
+
+\begin{frame}{$e^+e^-\rightarrow\eta\pi^+\pi^-\rightarrow{2(\pi^+\pi^-)\pi^0}$}
+  \footnotesize
+  Моделирование процесса в вершине $(5\,{\rm cm}, -3\,{\rm cm}, 2\,{\rm cm})$.
+  \begin{minipage}{0.45\textwidth}
+    \begin{figure}[ht]
+      \centering
+      \includegraphics[width=0.8\linewidth]{etapipi_5pi_vtx_x}
+      \vspace{-0.2cm}
+      \caption{\scriptsize $x$-координата вершины, определенная из фита.\label{fig:etapipi_5pi_vtx_x} }
+    \end{figure}
+  \end{minipage}
+  \hspace{1em}%
+  \begin{minipage}{0.45\textwidth}
+    \begin{figure}[ht]
+      \centering
+      \includegraphics[width=0.8\linewidth]{etapipi_5pi_vtx_y}
+      \vspace{-0.2cm}
+      \caption{\scriptsize $y$-координата вершины, определенная из фита.\label{fig:etapipi_5pi_vtx_y} }
+    \end{figure}
+  \end{minipage}
+  \begin{minipage}{0.45\textwidth}
+    \begin{figure}[ht]
+      \centering
+      \includegraphics[width=0.8\linewidth]{etapipi_5pi_vtx_z}
+      \vspace{-0.2cm}
+      \caption{\scriptsize $z$-координата вершины, определенная из фита.\label{fig:etapipi_5pi_vtx_z} }
+    \end{figure}
+  \end{minipage}
+  \hspace{1em}%
+  \begin{minipage}{0.45\textwidth}
+    \begin{figure}[ht]
+      \centering
+      \includegraphics[width=0.8\linewidth]{etapipi_5pi_vtx_m3pi}
+      \vspace{-0.2cm}
+      \caption{\scriptsize Инвариантная масса $\pi^+\pi^-\pi^0$.\label{fig:etapipi_5pi_m3pi} }
+    \end{figure}
+  \end{minipage}
+\end{frame}
+
+\begin{frame}{$e^+e^-\rightarrow{\rm K}_{\rm S}{\rm K}\pi$}
+  \footnotesize
+  \begin{minipage}{0.45\linewidth}
+    \includegraphics[width=0.8\linewidth]{kskpi_schema}
+  \end{minipage}
+  \hspace{1em}%
+  \begin{minipage}{0.45\linewidth}
+    \begin{itemize}
+      \item $x, y$-координаты пучковой вершины $0$ фиксированы на положении оси
+        пучков, $z$-координата пучковой вершины свободна,
+        \item $x, y, z$-координаты вершины $1$ распада ${\rm K}^0_{\rm
+            S}\rightarrow\pi^+\pi^-$ свободны,
+          \item из $8$ перестановок заряженных частиц выбирается перестановка,
+            отвечающая наименьшему $\chi^2$.
+    \end{itemize}
+  \end{minipage}
+  \begin{minipage}{0.45\linewidth}
+    \begin{figure}[ht]
+      \centering
+      \includegraphics[width=0.8\linewidth]{kskpi_noflow_mks}
+      \vspace{-0.2cm}
+      \caption{Инвариантная масса $\pi^+_1\pi^-_1$.\label{fig:kskpi_mks} }
+    \end{figure}
+  \end{minipage}
+  \hspace{1em}%
+  \begin{minipage}{0.45\linewidth}
+    \begin{figure}[ht]
+      \centering
+      \includegraphics[width=0.8\linewidth]{kskpi_noflow_chi2}
+      \vspace{-0.2cm}
+      \caption{$\chi^2$ кинематической реконструкции.\label{fig:kskpi_chi2} }
+    \end{figure}
+  \end{minipage}
+\end{frame}
+
+\begin{frame}{$e^+e^-\rightarrow{\rm K}_{\rm S}{\rm K}\pi$}
+  \footnotesize
+  \vspace{1em}%
+  \begin{minipage}{0.45\linewidth}
+    \begin{figure}[ht]
+      \centering
+      \includegraphics[width=0.7\linewidth]{kskpi_noflow_dr}
+      \vspace{-0.2cm}
+      \caption{Отлет <<${\rm K}_{\rm S}$>>.\label{fig:kskpi_noflow_dr} }
+    \end{figure}
+  \end{minipage}
+  \hspace{1em}%
+  \begin{minipage}{0.45\linewidth}
+    \begin{figure}[ht]
+      \centering
+      \includegraphics[width=0.7\linewidth]{kskpi_noflow_vtx_z}
+      \vspace{-0.2cm}
+      \caption{$z$-координаты вершин.\label{fig:kskpi_noflow_vtx_z} }
+    \end{figure}
+  \end{minipage}
+  \begin{minipage}{0.45\linewidth}
+      \begin{figure}[ht]
+        \centering
+        \includegraphics[width=0.7\linewidth]{kskpi_noflow_vtx1_xy}
+        \vspace{-0.2cm}%
+        \caption{Распределение координат вершины распада в $XY$ плоскости.\label{fig:kskpi_noflow_vtx1_xy}}
+      \end{figure}
+  \end{minipage}
+\end{frame}
+
+ \begin{frame}{$e^+e^-\rightarrow{\rm K}_{\rm S}{\rm K}\pi$}
+  \footnotesize
+  \begin{minipage}{0.45\linewidth}
+      \begin{figure}[ht]
+        \centering
+        \includegraphics[width=0.7\linewidth]{kskpi_noflow_pdedx_k}
+        \vspace{-0.2cm}%
+        \caption{${\rm dE}/{\rm dx}({\rm P})$ для <<${\rm K}^{\pm}$>>.\label{fig:kskpi_noflow_pdedx_k}}
+      \end{figure}
+    \end{minipage}
+    \hspace{1em}%
+    \begin{minipage}{0.45\linewidth}
+      \begin{figure}[ht]
+        \centering
+        \includegraphics[width=0.7\linewidth]{kskpi_noflow_pdedx_pibeam}
+        \vspace{-0.2cm}%
+        \caption{${\rm dE}/{\rm dx}({\rm P})$ для $\pi$-мезонов из пучковой вершины.\label{fig:kskpi_noflow_pdedx_pibeam}}
+      \end{figure}
+    \end{minipage}
+    \begin{minipage}{0.45\linewidth}
+      \begin{figure}[ht]
+        \centering
+        \includegraphics[width=0.7\linewidth]{kskpi_noflow_pdedx_pivertex}
+        \vspace{-0.2cm}%
+        \caption{${\rm dE}/{\rm dx}({\rm P})$ для $\pi$-мезонов из вершины
+          распада <<${\rm K}_{\rm S}$>>.\label{fig:kskpi_noflow_pdedx_pivertex}}
+      \end{figure}
+    \end{minipage}
+\end{frame}
+
+\begin{frame}{$e^+e^-\rightarrow{\rm K}_{\rm S}{\rm K}\pi$: констрейн на
+    направление ${\rm K}_{\rm S}$}
+  \footnotesize
+  
+    Констрейнов на з.с. энергии-импульса и вершины не достаточно для того, чтобы
+    импульс ${\rm K}_{\rm S}$ равнялся суммарному импульсу продуктов распада
+    ${\rm K}_{\rm S}$.
+
+    \textbf{Констрейн на косинус угла:} $\frac{(\Delta\vec{r}, \vec{p})}{\|\Delta\vec{r}\|\|\vec{p}\|} - 1 =
+    0$ -- эффективность реконструкции получается ниже, чем при использовании
+    \textbf{констрейнов на коллинераность:} $\Delta{y}p_z - \Delta{z}p_y = 0$,
+    $\Delta{z}p_x - \Delta{x}p_z = 0$, $\Delta{x}p_y - \Delta{y}p_x =
+    0$.
+    
+    \begin{minipage}{0.45\linewidth}
+      \includegraphics[width=0.8\linewidth]{flow_constraint_schema}
+    \end{minipage}
+    \hspace{1em}%
+    \begin{minipage}{0.45\linewidth}
+      \begin{figure}[ht]
+        \centering
+        \includegraphics[width=0.8\linewidth]{kskpi_dirang}
+        \vspace{-0.2cm}%
+        \caption{Угол $\alpha$.\label{fig:kskpi_dirang}}
+      \end{figure}
+    \end{minipage}
+\end{frame}
+
+\begin{frame}{Потеря частиц и $e^+e^-\rightarrow{\rm K}_{\rm S}{\rm K}_{\rm
+      L}\pi^0$}
+  \footnotesize
+  \textbf{Параметризация четырех-импульсов улетевших частиц:}
+  $\textcolor{blue}{\mathcal{P}=(\sqrt{
+      \textcolor{magenta}{p^{\textcolor{blue}{2}}_x} +
+    \textcolor{magenta}{p^{\textcolor{blue}{2}}_y} +
+    \textcolor{magenta}{p^{\textcolor{blue}{2}}_z} +
+    \textcolor{cadmiumgreen}{m}^2},
+  \textcolor{magenta}{p_x},
+  \textcolor{magenta}{p_y},
+  \textcolor{magenta}{p_z})}$ -- для частицы с массой
+$\textcolor{cadmiumgreen}{m}$,
+$\textcolor{blue}{\mathcal{P} =
+  (\textcolor{magenta}{\varepsilon},
+  \textcolor{magenta}{\varepsilon}\sin\textcolor{magenta}{\theta}\cos\textcolor{magenta}{\phi},
+  \textcolor{magenta}{\varepsilon}\sin\textcolor{magenta}{\theta}\sin\textcolor{magenta}{\phi},
+  \textcolor{magenta}{\varepsilon}\cos\textcolor{magenta}{\theta})}$ --- для
+безмассовой частицы.
+
+\textbf{Кинематическая реконструкция для событий моделирования
+  $e^+e^-\rightarrow{\rm K}_{\rm S}{\rm K}_{\rm L}\pi^0$.} ${\rm K}_{\rm L}$ --
+улетевшая частица. Две вершины: пучковая
+и вершина распада ${\rm K}_{\rm S}\rightarrow\pi^+\pi^-$. Перебор по всем парам фотонов.
+Выбирается пара фотонов, отвечающая наименьшему значению хи-квадрат
+кинематической реконструкции. \textcolor{red}{\textit{Необходим констрейн на направление
+  импульса ${\rm K}_{\rm S}$-мезона.}}
+
+\begin{minipage}{0.45\linewidth}
+  \begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.8\linewidth]{ksklpi0_dr}
+      \vspace{-0.2cm}%
+      \caption{Отлет <<${\rm K}_{\rm S}$>>.\label{fig:ksklpi0_dr}}
+    \end{figure}
+  \end{minipage}
+  \hspace{1em}%
+  \begin{minipage}{0.45\linewidth}
+    \begin{figure}[ht]
+      \centering
+      \includegraphics[width=0.8\linewidth]{ksklpi0_vtx0_z}
+      \vspace{-0.2cm}%
+      \caption{$Z$-координата пучковой вершины.\label{fig:ksklpi0_vtx0_z}}
+    \end{figure}
+  \end{minipage}
+\end{frame}
+
+\begin{frame}{$e^+e^-\rightarrow{\rm K}_{\rm S}{\rm K}_{\rm L}\pi^0$}
+  \footnotesize
+  \vspace{1em}
+  \begin{minipage}{0.45\linewidth}
+      \begin{figure}[ht]
+        \centering
+        \includegraphics[width=0.8\linewidth]{ksklpi0_vtx1_z}
+        \vspace{-0.2cm}%
+        \caption{$Z$-координата вершины распада <<${\rm K}_{\rm S}$>>.\label{fig:ksklpi0_vtx1_z}}
+      \end{figure}
+    \end{minipage}
+    \hspace{1em}%
+    \begin{minipage}{0.45\linewidth}
+      \begin{figure}[ht]
+        \centering
+        \includegraphics[width=0.8\linewidth]{ksklpi0_flow_chi2}
+        \vspace{-0.2cm}%
+        \caption{$\chi^2$ кинематической реконструкции.\label{fig:ksklpi0_flow_chi2}}
+      \end{figure}
+    \end{minipage}
+    \begin{minipage}{0.45\linewidth}
+      \begin{figure}[ht]
+        \centering
+        \includegraphics[width=0.8\linewidth]{ksklpi0_flow_mks}
+        \vspace{-0.2cm}%
+        \caption{Инвариантная масса $\pi^+\pi^-$.\label{fig:ksklpi0_flow_mks}}
+      \end{figure}
+    \end{minipage}
+    \hspace{1em}%
+    \begin{minipage}{0.45\linewidth}
+    %\vspace{-1.2cm}%
+      \begin{figure}[ht]
+        \centering
+        \includegraphics[width=0.8\linewidth]{ksklpi0_flow_mgg}
+        \vspace{-0.2cm}%
+        \caption{Инвариантная масса $\gamma\gamma$.\label{fig:ksklpi0_flow_mgg}}
+      \end{figure}
+    \end{minipage}
+  \end{frame}
+
+  \begin{frame}{$e^+e^-\rightarrow{\rm K}_{\rm S}{\rm K}_{\rm S}\pi^+\pi^-$}
+    \footnotesize
+    \vspace{1em}
+    \begin{minipage}{0.45\linewidth}
+      \begin{figure}[ht]
+        \centering
+        \includegraphics[width=0.8\linewidth]{ksks_minv}
+        \vspace{-0.2cm}%
+        \caption{Инвариантная масса одного из <<${\rm K}_{\rm S}$>>.\label{fig:ksks_minv}}
+      \end{figure}
+    \end{minipage}
+    \hspace{1em}%
+    \begin{minipage}{0.45\linewidth}
+      %\vspace{0.1cm}%
+      \begin{figure}[ht]
+        \centering
+        \includegraphics[width=0.8\linewidth]{ksks_chi2}
+        \vspace{-0.2cm}%
+        \caption{$\chi^2$ кинематической реконструкции.\label{fig:ksks_chi2}}
+      \end{figure}
+    \end{minipage}
+    \begin{minipage}{0.45\linewidth}
+      \begin{figure}[ht]
+        \centering
+        \includegraphics[width=0.8\linewidth]{ksks_dr}
+        \vspace{-0.2cm}%
+        \caption{Отлеты обоих <<${\rm K}_{\rm S}$>>.\label{fig:ksks_dr}}
+      \end{figure}
+    \end{minipage}
+    \hspace{1em}%
+    \begin{minipage}{0.45\linewidth}
+      Три вершины. Из $36$ возможных перестановок заряженных частиц выбирается
+      перестановка, отвечающая минимальному хи-квадрат кинематической реконструкции.
+    \end{minipage}
+  \end{frame}
+
+  \begin{frame}{$e^+e^-\rightarrow\pi^0\gamma$}
+    \footnotesize
+    \vspace{1em}
+    \begin{minipage}{0.45\linewidth}
+      \begin{figure}[ht]
+        \centering
+        \includegraphics[width=0.8\linewidth]{pi0gamma_mgg}
+        \vspace{-0.2cm}%
+        \caption{Инвариантная масса $\gamma\gamma$.\label{fig:pi0gamma_mgg}}
+      \end{figure}
+    \end{minipage}
+    \hspace{1em}%
+    \begin{minipage}{0.45\linewidth}
+      \begin{figure}[ht]
+        \centering
+        \includegraphics[width=0.8\linewidth]{pi0gamma_chi2}
+        \vspace{-0.2cm}%
+        \caption{$\chi^2$ кинематической реконструкции.\label{fig:pi0gamma_chi2}}
+      \end{figure}
+    \end{minipage}
+    \begin{minipage}{0.45\linewidth}
+      \begin{figure}[ht]
+        \centering
+        \includegraphics[width=0.8\linewidth]{pi0gamma_z}
+        \vspace{-0.2cm}%
+        \caption{$Z$-координата вершины.\label{fig:pi0gamma_z}}
+      \end{figure}
+    \end{minipage}
+  \end{frame}
+
+  \begin{frame}{Моделирование $e^+e^-\rightarrow\eta\pi^+\pi^-,
+      \eta\rightarrow\gamma\gamma$}
+    Розыгрыш одного и того же события с использованием матриц ошибок
+    частиц ($5\times10^{4}$ раз). Кинематическая реконструкция разыгранных
+    событий в гипотезе $e^+e^-\rightarrow\pi^+\pi^-\gamma\gamma$.
+    
+    \includegraphics[width=0.55\linewidth]{kinfit_etapipi_montecarlo}
+    \end{frame}
+
+  \begin{frame}{Результаты}
+    \footnotesize
+    \begin{enumerate}
+      \item Разработан пакет условной нелинейной оптимизации. На данный момент
+        для оптимизации используется многомерный метод Ньютона.
+      \item Разработан набор базовых классов для кинематической реконструкции.
+      \item Разработан пакет кинематической реконструкции для детектора КМД-3.
+      \item Выполнена проверка пакета кинематической реконструкции на примере
+        реконструкции событий моделирования ряда процессов.
+      \item Выполнена проверка распределения хи-квадрат кинематической реконструкции.
+    \end{enumerate}
+  \end{frame}
+  
+  \begin{frame}[standout]
+    Спасибо за внимание!
+  \end{frame}
+
+  \appendix
+  
+\end{document}
