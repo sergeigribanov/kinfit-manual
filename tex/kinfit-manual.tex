@@ -537,7 +537,218 @@ $\textcolor{blue}{\mathcal{P} =
     событий в гипотезе $e^+e^-\rightarrow\pi^+\pi^-\gamma\gamma$.
     
     \includegraphics[width=0.55\linewidth]{kinfit_etapipi_montecarlo}
-    \end{frame}
+  \end{frame}
+
+  \begin{frame}{Получение исходного кода}
+    \footnotesize
+    \begin{block}{Предварительные шаги}
+      \begin{itemize}
+      \item Создать директорию, в которой будет храниться исходный код.
+      \item Перейти в эту директорию.
+      \end{itemize}
+    \end{block}
+    \begin{block}{Пакет оптимизации}
+      git clone \textcolor{blue}{\url{https://github.com/sergeigribanov/ccgo}}
+    \end{block}
+    \begin{block}{Пакет базовых классов кинематической реконструкции}
+      git clone \textcolor{blue}{\url{https://github.com/sergeigribanov/KFBase}}
+    \end{block}
+    \begin{block}{Пакет кинематической реконструкции для детектора КМД-3}
+      git clone \textcolor{blue}{\url{https://github.com/sergeigribanov/KFCmd}}
+    \end{block}
+  \end{frame}
+  
+  \begin{frame}{Подготовка к установке}
+    \footnotesize
+    \begin{itemize}
+    \item Скачать исходный код пакетов CCGO, KFBase, KFCmd (см. предыдущий
+      слайд).
+    \item Далее в презентации в демонстрационных целях будем считать, что
+      исходный код пакетов хранится в директории
+      \textcolor{blue}{/sl19cmd/sgribanov/source}.
+    \item Предполагается, что установлен фреймворк ROOT (C++11).
+    \item Настроить переменные окружения фреймворка ROOT. Например, так\\
+      source <префикс ROOT>/bin/thisroot.sh
+    \item Предполагается, что установлен пакет Eigen3. Далее предполагается, что
+      пакет Eigen3 установлен верно в том смысле, что в CMake его можно найти с
+      помощью find\_package. В противном случае путь к Eigen3 можно указать с
+      помощью специальной опции при вызове cmake.
+    \item Создать директорию для сборки пакетов, например,
+      \textcolor{blue}{/sl19cmd/sgribanov/build}. В этой директории создать поддиректории
+      ccgo, KFBase, KFCmd.
+    \item Создать директорию, в которую будут установлены
+      пакеты. Например, \textcolor{blue}{/spoolA/sgribanov/packages}.
+    \end{itemize}
+  \end{frame}
+
+  \begin{frame}{Установка пакета оптимизации CCGO}
+    \footnotesize
+    \textbf{Зависимости:} Eigen3.\\
+    \textbf{Установка (пути необходимо переименовать):}
+    \begin{enumerate}
+    \item Перейти в директорию, предназначенную для сборки пакета CCGO (не
+      путать с директорией, содержащей исходный код).\\
+      cd /store19/sgribanov/build/ccgo
+    \item Вызвать следующую команду:\\
+      cmake -DCMAKE\_INSTALL\_PREFIX=/spoolA/sgribanov/packages/ccgo
+      /sl19cmd/sgribanov/source/ccgo\\
+      С помощью опции DCMAKE\_INSTALL\_PREFIX указывается директория, в которую
+      будет установлен пакет. Последний путь в строке команды --- путь к
+      директории, содержащей исходный код пакета.
+    \item make
+    \item make install
+    \end{enumerate}
+  \end{frame}
+
+  \begin{frame}{Установка пакета KFBase}
+    \footnotesize
+    \textbf{Зависимости:} Eigen3, ROOT, CCGO.\\
+    \textbf{Установка (пути необходимо переименовать):}
+    \begin{enumerate}
+    \item Перейти в директорию, предназначенную для сборки пакета KFBase.\\
+      cd /store19/sgribanov/build/KFBase
+    \item Вызвать следующую команду:\\
+      cmake -DCMAKE\_INSTALL\_PREFIX=/spoolA/sgribanov/packages/KFBase
+      /sl19cmd/sgribanov/source/KFBase\\
+      Здесь /spoolA/sgribanov/packages/KFBase --- директория, в которую будет
+      установлен пакет KFBase. В директории /sl19cmd/sgribanov/source/KFBase
+      хранится исходный код пакета KFBase.
+    \item make
+    \item make install
+    \end{enumerate}
+  \end{frame}
+
+  \begin{frame}{Установка пакета KFCmd}
+    \footnotesize
+    \textbf{Зависимости:} Eigen3, ROOT, CCGO, KFBase.\\
+    \textbf{Установка (пути необходимо переименовать):}
+    \begin{enumerate}
+    \item Перейти в директорию, предназначенную для сборки пакета KCmd.\\
+      cd /store19/sgribanov/build/KFCmd
+    \item Вызвать следующую команду:\\
+      cmake -DCMAKE\_INSTALL\_PREFIX=/spoolA/sgribanov/packages/KFCmd
+      /sl19cmd/sgribanov/source/KFCmd\\
+      Здесь /spoolA/sgribanov/packages/KFCmd --- директория, в которую будет
+      установлен пакет KFCmd. В директории /sl19cmd/sgribanov/source/KFCmd
+      хранится исходный код пакета KFCmd.
+    \item make
+    \item make install
+    \end{enumerate}
+  \end{frame}
+
+  \begin{frame}{Пакеты уже установлены на кластере КМД-3}
+    \textbf{Префиксы:}\\
+    /spoolA/sgribanov/packages/ccgo\\
+    /spoolA/sgribanov/packages/KFBase\\
+    /spoolA/sgribanov/packages/KFCmd
+  \end{frame}
+
+  \begin{frame}{Настройка окружения}
+    \textbf{Простой способ:} скопировать файл
+    /spoolA/sgribanov/packages/KFCmd/env/rootlogon.C в свою рабочую директорию
+    или скопировать содержимое этого файла в уже имеющийся rootlogon.C. \textit{Пример}\\
+    \textbf{При использовании CMake} в собственной программе кинематической
+    реконструкции пакеты KFCmd, KFBase, CCGO находятся
+    автоматически. Однако перед запуском исполняемого файла необходимо настроить
+    переменные окружения. \textit{Пример}
+  \end{frame}
+
+  \begin{frame}{Гипотезы}
+    \footnotesize
+    \begin{itemize}
+    \item Далее под гипотезой подразумевается совокупность вершин, частиц и
+      условий, а также их состояний (включены, выключены, фиксированы, свободны).
+    \item Некоторые гипотезы уже заданы в пакете KFCmd: $\pi^+\pi^-\gamma\gamma$,
+      $K_sK^+\pi^-,\,K_s\rightarrow\pi^+\pi^-$,
+      $K_sK^-\pi^+,\,K_s\rightarrow\pi^+\pi^-$,
+      $K_sK_s\pi^+\pi^-,\,K_s\rightarrow\pi^+\pi^-$,
+      $\gamma\gamma\gamma$, $\pi^+\pi^-\pi^+\pi^-$ и др.
+      Пример гипотезы $K_sK^-\pi^+,\,K_s\rightarrow\pi^+\pi^-$:
+      \textcolor{blue}{\url{https://github.com/sergeigribanov/KFCmd/blob/master/src/Hypo3ChPionsKMinus.cpp}}.
+    \item С програмной точки зрения гипотеза представляет собой класс,
+      отнаслеованный от класса Hypothesis из пакета KFCmd.
+      \item У класса гипотезы необходио реализовать только конструктор, где
+        создаются вершины, частицы и условия.
+      \item \textbf{Законы сохранения энергии-импульса} для конечных частиц
+        выполняются по умолчанию.
+    \item Пользователь всегда может создать собственную гипотезу вне пакета
+      KFCmd (будет рассказано далее).
+    \item Пользователь может обратиться с просьбой о добавлении конкретной
+      гипотезы в пакет KFCmd.
+    \end{itemize}
+  \end{frame}
+
+  \begin{frame}{Устройство гипотезы $K_sK^-\pi^+,\,K_s\rightarrow\pi^+\pi^-$}
+    \footnotesize 
+   Далее будет рассказано про устройство гипотезы на примере гипотезы $K_sK^-\pi^+,\,K_s\rightarrow\pi^+\pi^-$:
+      \textcolor{blue}{\url{https://github.com/sergeigribanov/KFCmd/blob/master/src/Hypo3ChPionsKMinus.cpp}}. Приведенный
+      ниже код содержится в теле конструктора.
+     \inputminted[mathescape=true]{cpp}{\code/HypoKsKplusPiMinus.cpp}
+   \end{frame}
+
+   \begin{frame}{Устройство гипотезы $K_sK^-\pi^+,\,K_s\rightarrow\pi^+\pi^-$ (продолжение)}
+     \footnotesize
+     Метод \textbf{addChargedParticle} добавляет заряженную частицу в
+     гипотезу. Список имеющихся заряженных частиц:
+     \begin{itemize}
+     \item KFCmd::Electron --- $e^-$,
+     \item KFCmd::Positron --- $e^+$,
+     \item KFCmd::Muon --- $\mu^-$,
+     \item KFCmd::AntiMuon --- $\mu^+$,
+     \item KFCmd::PiMinusMeson --- $\pi^-$,
+     \item KFCmd::PiPlusMeson --- $\pi^+$,
+     \item KFCmd::KMinusMeson --- $K^-$,
+     \item KFCmd::KPlusMeson --- $K^+$,
+     \item Пользовательская заряженная частица: \textbf{ChargedParticle(} \textit{имя},
+       \textit{масса} в МЭВах, \textit{заряд} в ед. элементарного\textbf{)}.
+     \end{itemize}
+     Для всех частиц, кроме пользовательской, массы берутся из PDG.
+   \end{frame}
+  
+   \begin{frame}{Устройство гипотезы $K_sK^-\pi^+,\,K_s\rightarrow\pi^+\pi^-$ (продолжение)}
+     \footnotesize
+     Метод \textbf{addVertexConstraintsXYZ(}``pi+\_1'', ``vtx0''\textbf{)} добавляет
+     условия на то, что вершина "vtx0" лежит на треке заряженной частицы
+     ``pi+\_1''.
+
+     В приведенной выше гипотезе предполагается, что $K_S$-мезон вылетает из
+     вершины ``vtx0'' и распадается в вершине ``vtx1''. Чтобы избежать лишних
+     параметров $K_S$-мезон в гипотезе непосредственно не задается.
+
+     На угол $\alpha$ между импульсом $K_S$-мезона и суммарным импульсом продуктов его
+     распада накладывается условие $\alpha=0$ (вернее условия на коллинеарность,
+     описаны выше). Для этого с помощью метода
+     \textbf{addFlowConstraintsXYZ(}``ks-flow'', ``vtx0'', ``vtx1''\textbf{)} создается
+     соответствующий набор из трех условий. Здесь ``ks-flow'' --- имя группы
+     условий (выбирается пользователем).
+
+     Продукты распада добавляются с помощью вызова методов:
+     \inputminted[mathescape=true]{cpp}{\code/ksdecayproducts.cpp}
+   \end{frame}
+
+   \begin{frame}{Устройство гипотезы $\pi^+\pi^-\gamma\gamma$}
+     \footnotesize
+     Пример гипотезы $\pi^+\pi^-\gamma\gamma$
+     \textcolor{blue}{\url{https://github.com/sergeigribanov/KFCmd/blob/master/src/Hypo2ChPions2Photons.cpp}}:
+     \inputminted[mathescape=true]{cpp}{\code/Hypo2ChPions2Photons.cpp}
+   \end{frame}
+
+   \begin{frame}{Устройство гипотезы $\pi^+\pi^-\pi^+\pi^-\gamma\gamma$}
+     \footnotesize
+     Пример гипотезы $\pi^+\pi^-\pi^+\pi^-\gamma\gamma$
+     \textcolor{blue}{\url{https://github.com/sergeigribanov/KFCmd/blob/master/src/Hypo4ChPions2Photons.cpp}}:
+     \inputminted[mathescape=true]{cpp}{\code/Hypo4ChPions2Photons.cpp}
+   \end{frame}
+
+   \begin{frame}{Устройство гипотезы $\pi^+\pi^-\pi^+\pi^-\gamma\gamma$}
+     
+   \end{frame}
+
+   \begin{frame}{Создание собственной гипотезы}
+   \end{frame}
+
+  \begin{frame}{Использование пакета KFCmd}
+  \end{frame}
 
   \begin{frame}{Результаты}
     \footnotesize

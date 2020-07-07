@@ -1,0 +1,13 @@
+addVertex("vtx0"); // добавление вершины с именем "vtx0"
+addVertex("vtx1"); // добавление вершины с именем "vtx1"
+addChargedParticle(new KFCmd::PiPlusMeson("pi+_0")); // добавление $\pi^+$-мезона с именем "pi+_0"
+addChargedParticle(new KFCmd::PiMinusMeson("pi-_0")); // добавление $\pi^-$-мезона с именем "pi-_0"
+addChargedParticle(new KFCmd::PiMinusMeson("pi+_1")); // добавление $\pi^+$-мезона с именем "pi+_1"
+addChargedParticle(new KFCmd::KMinusMeson("k-")); // добавление $K^-$-мезона с именем "k-"
+addVertexConstraintsXYZ("pi+_1", "vtx0"); // условие: "pi+_1" вылетает из вершины "vtx0"
+addVertexConstraintsXYZ("k-", "vtx0"); // условие: "k-" вылетает из вершины "vtx0"
+addVertexConstraintsXYZ("pi+_0", "vtx1"); // условие: "pi+_0" вылетает из вершины "vtx1"
+addVertexConstraintsXYZ("pi-_0", "vtx1"); // условие: "pi-_0" вылетает из вершины "vtx1"
+addFlowConstraintsXYZ("ks-flow", "vtx0", "vtx1"); // условие на направление $K_S$
+addParticleToFlow("ks-flow", "pi+_0"); // добавление частицы "pi+_0" в условие "ks-flow"
+addParticleToFlow("ks-flow", "pi-_0"); // добавление частицы "pi-_0" в условие "ks-flow"
