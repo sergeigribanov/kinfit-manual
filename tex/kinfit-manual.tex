@@ -646,11 +646,18 @@ $\textcolor{blue}{\mathcal{P} =
   \begin{frame}{Настройка окружения}
     \textbf{Простой способ:} скопировать файл
     /spoolA/sgribanov/packages/KFCmd/env/rootlogon.C в свою рабочую директорию
-    или скопировать содержимое этого файла в уже имеющийся rootlogon.C. \textit{Пример}\\
+    или скопировать содержимое этого файла в уже имеющийся rootlogon.C. В
+    рабочей директории также необходимо создать файлы пользовательской программы
+    реконструкции. \textit{Примеры:}\\
+    \textcolor{blue}{\url{https://github.com/sergeigribanov/KFCmdKsKs2ChPi}},\\
+    \textcolor{blue}{\url{https://github.com/sergeigribanov/KFCmdKsKpi}},\\
+    \textcolor{blue}{\url{https://github.com/sergeigribanov/KFCmdKsKlPi0}}.\\
+
     \textbf{При использовании CMake} в собственной программе кинематической
     реконструкции пакеты KFCmd, KFBase, CCGO находятся
     автоматически. Однако перед запуском исполняемого файла необходимо настроить
-    переменные окружения. \textit{Пример}
+    переменные окружения. \textit{Пример:}
+    \textcolor{blue}{\url{https://github.com/sergeigribanov/KFCmd5Pi}}.
   \end{frame}
 
   \begin{frame}{Гипотезы}
@@ -700,7 +707,7 @@ $\textcolor{blue}{\mathcal{P} =
      \item KFCmd::KMinusMeson --- $K^-$,
      \item KFCmd::KPlusMeson --- $K^+$,
      \item Пользовательская заряженная частица: \textbf{ChargedParticle(} \textit{имя},
-       \textit{масса} в МЭВах, \textit{заряд} в ед. элементарного\textbf{)}.
+       \textit{масса} в МэВах, \textit{заряд} в ед. элементарного\textbf{)}.
      \end{itemize}
      Для всех частиц, кроме пользовательской, массы берутся из PDG.
    \end{frame}
@@ -740,29 +747,136 @@ $\textcolor{blue}{\mathcal{P} =
      \inputminted[mathescape=true]{cpp}{\code/Hypo4ChPions2Photons.cpp}
    \end{frame}
 
-   \begin{frame}{Устройство гипотезы $\pi^+\pi^-\pi^+\pi^-\gamma\gamma$}
-     
+   \begin{frame}{Устройство гипотезы $\pi^+\pi^-\pi^+\pi^-\gamma\gamma$ (продолжение)}
+     \footnotesize
+     Метод \textbf{addMassConstraint(}\textit{имя условия}, \textit{масса} в МэВах,
+     \textit{множество частиц}\textbf{)} добавляет условие на инвариантную массу
+     группы частиц. Имя условия (в данном случае ``m-pi0-constraint'')
+     выбирается пользователем.
+
+     Метод \textbf{disableConstraint(}имя условия\textbf{)} предназначен для
+     отключения единичного (в смысле единственное) условия по его имени. Необходимо отметить, что группу
+     условий таким образом отключить нельзя. Примером группы условий являются
+     условия на вершину или условия на коллинеарность импульса распадной частицы
+     суммарному импульсу ее продуктов распада. Как при необходимости отключить
+     такие условия будет рассказано далее.
+
+     Таким образом, \textit{условие на инвариантную массу} в гипотезе формально
+     отсутствует. Однако его при необходимости можно включить в коде
+     пользовательской программы реконструкции, превратив гипотезу
+     $\pi^+\pi^-\pi^+\pi^-\gamma\gamma$ в гипотезу
+     $\pi^+\pi^-\pi^+\pi^-\pi^0,\,\pi^0\rightarrow\gamma\gamma$. Предположим,
+     что объект гипотезы называется \textbf{hypo}. Тогда условие с именем
+     ``m-pi0-constraint'' можно включить так
+     \textbf{hypo}.\textbf{enableConstraint(}``m-pi0-constraint''\textbf{)}.
    \end{frame}
 
-   \begin{frame}{Создание собственной гипотезы}
+   \begin{frame}{Устройство гипотезы $K_sK_L\pi^0$}
+     \footnotesize
+     Пример гипотезы с потерянной частицей $K_L$
+     \textcolor{blue}{\url{https://github.com/sergeigribanov/KFCmd/blob/master/src/HypoKsKlPi0.cpp}}:
+     \inputminted[mathescape=true]{cpp}{\code/HypoKsKlPi0.cpp}
    \end{frame}
 
-  \begin{frame}{Использование пакета KFCmd}
+   \begin{frame}{Устройство гипотезы $K_sK_L\pi^0$ (продолжение)}
+     \footnotesize
+     \inputminted[mathescape=true]{cpp}{\code/HypoKsKlPi0-2.cpp}
+     \textbf{Замечание.} Если необходимо добавить потерянный фотон, то делать
+     это нужно иным образом. Чтобы не возникало проблемм, связанных с
+     вычислением первых и вторых производных, четырех-импульсы безмассовых
+     частиц задаются следующим образом: $\mathcal{P}=(E, E\sin\theta\sin\phi,
+     E\sin\theta\cos\phi, E\cos\theta)$. Добавить такую частицу можно с помощью
+     метода \textbf{addParticleMassLessThetaPhiE(}\textit{имя
+       частицы}\textit{)}. Так как обратная матрица ошибок по умолчанию нулевая,
+     то частица является потерянной.
+   \end{frame}
+   
+   \begin{frame}{Использование пакета KFCmd, интеграция с TrPh}
+     \footnotesize
+    Для удобства использования пакет кинематической реконструкции для КМД-3
+    адоптирован для работы с tr\_ph деревьями. Для этого в пакет кинематической
+    реконструкции для детектора КМД-3 KFCmd добавлен абстрактный класс TrPh с
+    описанием параметров дерева:
+    \textcolor{blue}{\url{https://github.com/sergeigribanov/KFCmd/blob/master/include/TrPh.hpp}}.
+    При появлении новых версий tr\_ph этот класс необходимо будет обновлять.
+
+    В простейшем случае, при написании пользовательской программы реконструкции,
+    необходимо отнаследовать собственный класс TrPh от класса KFCmd::TrPh (класс
+    TrPh из пакета KFCmd). Необходимо вставить имплементацию метода
+    \textbf{Loop}, создать конструктор и деструктор (см. образец в примере).
+    Также можно вставить имплементацию метода \textbf{Cut} и
+    собсвтенных методов при необходимости.
+
+    Интеграция с TrPh скрывает от пользователя заполнение параметров и обратных
+    матриц ошибок этих параметров для фотонов и заряженных частиц.
   \end{frame}
 
-  \begin{frame}{Результаты}
+  \begin{frame}{Использование пакета KFCmd, схема простейшей программы}
     \footnotesize
-    \begin{enumerate}
-      \item Разработан пакет условной нелинейной оптимизации. На данный момент
-        для оптимизации используется многомерный метод Ньютона.
-      \item Разработан набор базовых классов для кинематической реконструкции.
-      \item Разработан пакет кинематической реконструкции для детектора КМД-3.
-      \item Выполнена проверка пакета кинематической реконструкции на примере
-        реконструкции событий моделирования ряда процессов.
-      \item Выполнена проверка распределения хи-квадрат кинематической реконструкции.
-    \end{enumerate}
+    Будет рассмотрена программа кинематической реконструкции событий процесса
+    $K_sK_l\pi^0,\pi^0\rightarrow\gamma\gamma$. Гипотеза:
+    \textcolor{blue}{\url{https://github.com/sergeigribanov/KFCmd/blob/master/src/HypoKsKlPi0.cpp}}
+    \inputminted[mathescape=true]{cpp}{\code/simpliest-program.cpp}
   \end{frame}
-  
+
+  \begin{frame}{Схема простейшей программы (продолжение)}
+    \footnotesize
+    \inputminted[mathescape=true]{cpp}{\code/simpliest-program-2.cpp}
+  \end{frame}
+
+  \begin{frame}{Схема простейшей программы (продолжение)}
+    \footnotesize
+    \inputminted[mathescape=true]{cpp}{\code/simpliest-program-3.cpp}
+  \end{frame}
+
+  \begin{frame}{Схема простейшей программы (продолжение)}
+    \footnotesize
+    \inputminted[mathescape=true]{cpp}{\code/simpliest-program-4.cpp}
+  \end{frame}
+
+  \begin{frame}{Схема простейшей программы (продолжение)}
+    \footnotesize
+    \inputminted[mathescape=true]{cpp}{\code/simpliest-program-5.cpp}
+  \end{frame}
+
+  \begin{frame}{Схема простейшей программы (продолжение)}
+    \footnotesize
+    \inputminted[mathescape=true]{cpp}{\code/simpliest-program-6.cpp}
+  \end{frame}
+
+  \begin{frame}{Схема простейшей программы (продолжение)}
+    \footnotesize
+    \inputminted[mathescape=true]{cpp}{\code/simpliest-program-7.cpp}
+    Заполнять параметры потерянной частицы $K_L$ нет необходимости.
+  \end{frame}
+
+  \begin{frame}{Получение импульсов и масс}
+    \footnotesize
+    \inputminted[mathescape=true]{cpp}{\code/getting-parameters.cpp}
+  \end{frame}
+
+  \begin{frame}{Получение координат вершин}
+    \footnotesize
+    \inputminted[mathescape=true]{cpp}{\code/getting-parameters-2.cpp}
+  \end{frame}
+
+  \begin{frame}{Получение параметров}
+    \footnotesize
+    \inputminted[mathescape=true]{cpp}{\code/getting-parameters-3.cpp}
+  \end{frame}
+
+  \begin{frame}{Получение кода ошибки и $\chi^2$}
+    \footnotesize
+    \inputminted[mathescape=true]{cpp}{\code/chi2-error-codes.cpp}
+  \end{frame}
+
+  \begin{frame}{Включение / выключение условий}
+    \footnotesize
+    Включить / выключить условие / группу условий можно, например, перед циклом
+    по событиям.
+    \inputminted[mathescape=true]{cpp}{\code/enable-disable-constraints.cpp}
+  \end{frame}
+
   \begin{frame}[standout]
     Спасибо за внимание!
   \end{frame}
